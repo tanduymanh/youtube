@@ -3,34 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- Thêm meta tag Referrer Policy cho toàn bộ trang -->
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<title>YouTube Auto Close</title>
+<title>Góc Video Cho Bé</title>
 <style>
     body {
         margin: 0;
         padding: 0;
-        overflow: hidden;
         font-family: Arial, sans-serif;
+        background-color: #121212;
+        color: white;
     }
+    /* Màn hình nhập thông tin */
     #info-screen {
         position: fixed;
         top: 0; left: 0; width: 100%; height: 100%;
         background: #f4f7f6;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
+        display: flex; justify-content: center; align-items: center;
+        z-index: 1000; color: #333;
     }
     .info-box {
-        background: white;
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        width: 350px;
-        text-align: center;
+        background: white; padding: 30px; border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 350px; text-align: center;
     }
-    .info-box h2 { margin-bottom: 20px; color: #333; }
     .info-box input, .info-box textarea {
         width: 100%; padding: 10px; margin: 10px 0;
         border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;
@@ -40,35 +34,65 @@
         color: white; border: none; border-radius: 5px; cursor: pointer;
         font-size: 16px; font-weight: bold;
     }
-    .info-box button:hover { background-color: #218838; }
 
+    /* Giao diện chính */
     #main-content { display: none; }
     .header-container {
         display: flex; justify-content: space-between; align-items: center;
-        padding: 0 20px; height: 50px; background-color: #f1f1f1;
+        padding: 0 20px; height: 50px; background-color: #1f1f1f;
     }
-    h2 { margin: 0; font-size: 20px; }
-    #timer { font-weight: bold; color: red; font-size: 18px; }
-    .video-container { height: calc(100vh - 50px); width: 100%; }
+    #timer { font-weight: bold; color: #ff4d4d; font-size: 18px; }
+
+    /* Bố cục Xem video & Danh sách chọn */
+    .app-container {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 50px);
+    }
+    .player-section {
+        flex: 1;
+        background: #000;
+        display: flex; justify-content: center; align-items: center;
+    }
     iframe { width: 100%; height: 100%; border: none; }
+
+    /* Danh sách video bên dưới cho bé chọn */
+    .playlist-section {
+        height: 140px;
+        background: #181818;
+        display: flex;
+        gap: 15px;
+        padding: 10px 20px;
+        overflow-x: auto;
+        align-items: center;
+    }
+    .video-card {
+        flex: 0 0 160px;
+        cursor: pointer;
+        text-align: center;
+        transition: transform 0.2s;
+    }
+    .video-card:hover { transform: scale(1.05); }
+    .video-card img {
+        width: 100%; height: 90px;
+        object-fit: cover; border-radius: 8px;
+    }
+    .video-card p {
+        margin: 5px 0 0; font-size: 12px;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
     #settings-btn {
-        position: absolute; bottom: 20px; right: 20px;
-        padding: 10px; cursor: pointer; opacity: 0.5; z-index: 10;
-        background: #fff; border: 1px solid #ccc; border-radius: 5px;
+        position: absolute; bottom: 160px; right: 20px;
+        padding: 8px 12px; cursor: pointer; opacity: 0.6; z-index: 10;
+        background: #fff; border: none; border-radius: 5px; color: #000;
     }
-    #settings-btn:hover { opacity: 1; }
     .modal {
-        display: none; position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.7); justify-content: center; align-items: center;
-        z-index: 1001;
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1001;
     }
-    .modal-content {
-        background: white; padding: 20px; border-radius: 8px;
-        text-align: center; width: 300px;
-    }
+    .modal-content { background: white; padding: 20px; border-radius: 8px; text-align: center; width: 300px; color: #333; }
     .modal-content input { width: 80%; padding: 8px; margin: 10px 0; }
-    .modal-content button { padding: 8px 20px; cursor: pointer; }
 </style>
 <script>
     let timeLeft = 300; 
@@ -108,6 +132,12 @@
         }
     }
 
+    // Hàm chuyển đổi Video khi bé bấm vào danh sách
+    function playVideo(videoId) {
+        const iframe = document.getElementById('main-player');
+        iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1`;
+    }
+
     function openSettings() {
         const pass = prompt("Vui lòng nhập mật khẩu:");
         if (pass === "1234") {
@@ -142,22 +172,45 @@
 
     <div id="main-content">
         <div class="header-container">
-            <h2>Video YouTube</h2>
+            <h2>Góc Video Cho Bé</h2>
             <div id="timer">Thời gian còn lại: 5:00</div>
         </div>
         
-        <div class="video-container">
-            <!-- ĐÃ SỬA: Sử dụng youtube-nocookie.com và thuộc tính referrerpolicy -->
-            <iframe 
-    src="https://www.youtube-nocookie.com/embed/yxQ7HXXwzHY" 
-    title="YouTube video player"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-    referrerpolicy="strict-origin-when-cross-origin"
-    allowfullscreen>
-</iframe>
+        <div class="app-container">
+            <!-- Khung phát Video chính -->
+            <div class="player-section">
+                <iframe 
+                    id="main-player"
+                    src="https://www.youtube-nocookie.com/embed/yxQ7HXXwzHY" 
+                    title="YouTube video player"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    allowfullscreen>
+                </iframe>
+            </div>
+
+            <!-- Danh sách video cho bé chọn -->
+            <div class="playlist-section">
+                <!-- Video 1 -->
+                <div class="video-card" onclick="playVideo('yxQ7HXXwzHY')">
+                    <img src="https://img.youtube.com/vi/yxQ7HXXwzHY/mqdefault.jpg" alt="Video 1">
+                    <p>Video 1 (Shorts)</p>
+                </div>
+                <!-- Video 2 -->
+                <div class="video-card" onclick="playVideo('dQw4w9WgXcQ')">
+                    <img src="https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg" alt="Video 2">
+                    <p>Video 2</p>
+                </div>
+                <!-- Video 3 -->
+                <div class="video-card" onclick="playVideo('L_LUpnjgPso')">
+                    <img src="https://img.youtube.com/vi/L_LUpnjgPso/mqdefault.jpg" alt="Video 3">
+                    <p>Video 3</p>
+                </div>
+                <!-- Thêm video khác bằng cách copy thêm thẻ div.video-card và thay ID video -->
+            </div>
         </div>
 
-        <button id="settings-btn" onclick="openSettings()">⚙️ Cài đặt</button>
+        <button id="settings-btn" onclick="openSettings()">⚙️️ Cài đặt</button>
     </div>
 
     <div id="settings-modal" class="modal">
